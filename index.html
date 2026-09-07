@@ -789,13 +789,20 @@
     .v6-inline-editor textarea { min-height: 72px; resize: vertical; border: 1px solid #cbd8e9; border-radius: 7px; padding: 9px 11px; color: #344157; background: #fff; font: inherit; font-size: 13px; line-height: 1.6; }
     .v6-inline-editor button { min-height: 36px; border-color: #82aee4; color: #fff; background: #377bd1; }
     .v6-structured-editor { display: grid; gap: 10px; }
-    .v6-structured-phase { display: grid; grid-template-columns: minmax(205px, 1.05fr) minmax(125px, .58fr) minmax(125px, .58fr) minmax(120px, .52fr) minmax(220px, 1.1fr); gap: 10px; border-bottom: 1px solid #dfe7f1; padding-bottom: 10px; }
+    .v6-structured-phase { display: grid; grid-template-columns: minmax(205px, 1.05fr) minmax(125px, .58fr) minmax(125px, .58fr) minmax(120px, .52fr) minmax(220px, 1.1fr) 88px; align-items: end; gap: 10px; border-bottom: 1px solid #dfe7f1; padding-bottom: 10px; }
     .v6-structured-phase:last-child { border-bottom: 0; padding-bottom: 0; }
     .v6-structured-phase label { display: grid; gap: 5px; }
     .v6-structured-phase input, .v6-structured-phase select { width: 100%; min-height: 36px; border: 1px solid #cbd8e9; border-radius: 6px; padding: 0 9px; color: #344157; background: #fff; font: inherit; font-size: 13px; }
     .v6-structured-phase select:disabled { color: #8b97a8; background: #f3f5f8; cursor: not-allowed; }
     .v6-editor-slots.is-hidden { display: none; }
+    .v6-remove-phase-rule { min-height: 38px !important; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border-color: #e2c6c8 !important; color: #a7474f !important; background: #fff !important; font-size: 12px; font-weight: 600; }
+    .v6-remove-phase-rule .material-symbols-outlined { font-size: 17px; }
+    .v6-remove-phase-rule:not(:disabled):hover { border-color: #d69aa0 !important; background: #fff6f6 !important; }
+    .v6-remove-phase-rule:disabled { border-color: #e1e5eb !important; color: #a7b0bd !important; background: #f5f6f8 !important; cursor: not-allowed; }
     .v6-structured-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .v6-structured-actions .v6-add-phase-rule { display: inline-flex; align-items: center; gap: 4px; margin-right: auto; border-color: #9bbce4; color: #2d68aa; background: #fff; font-weight: 600; }
+    .v6-structured-actions .v6-add-phase-rule:hover { border-color: #76a3d7; color: #1f5faa; background: #f5f9ff; }
+    .v6-structured-actions .v6-add-phase-rule .material-symbols-outlined { font-size: 18px; }
     .v6-structured-actions .v6-cancel-structured { border-color: #c7d2df; color: #536176; background: #fff; }
     .v6-supplement { border: 1px dashed #b8cbe3; border-radius: 9px; padding: 13px 15px; background: #f8fbff; }
     .v6-supplement summary { color: #2f68ad; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -4553,10 +4560,9 @@
           mode: '线上',
           requirements: ['女老师', '性格温柔', '全英文授课'],
           phases: [
-            { date: '2026.09.01—2026.09.30', frequency: '1节/周', frequencyRule: '可选', strength: '偏好', policy: '不限制', slots: '师生共同空闲时间', choose: '安排1个/周', fallback: '无需补排规则', evidence: '“计算机每周一节左右”', confidence: '91%', summary: '系统按四周滚动目标创建课节，在全部师生共同空闲时间中选择。' },
-            { date: '2026.10.01—2026.12.30', frequency: '不限制', frequencyRule: '固定', strength: '硬性', policy: '优先', slots: '周中 08:00—12:00', choose: '安排1个', fallback: '允许其他时间补排', evidence: '“剩余课程尽量安排周中早课”', confidence: '90%', summary: '系统必须完成1个剩余课节任务，优先使用周中早课，未命中时搜索其他共同空闲时间。' }
+            { date: '2026.09.01—2026.12.30', frequency: '1节/周', frequencyRule: '可选', strength: '偏好', policy: '优先', slots: '周中 08:00—12:00', choose: '安排1个/周', fallback: '允许其他时间补排', evidence: '“计算机每周一节左右，尽量安排周中早课”', confidence: '93%', summary: '系统在完整上课日期内按周安排课程，优先使用周中早课，未命中时搜索其他师生共同空闲时间。' }
           ],
-          editText: '9月每周1节，不限制时段。10月后完成剩余课时，优先周中早课。',
+          editText: '9月到12月每周可排1节，优先安排周中早课。',
           selected: { name: '李春玲(VA000261)', meta: '', coverage: '5/5节', preference: '4/5节', avatar: '李' },
           alternatives: [
             { name: '周雨晨(VA00871)', meta: '', coverage: '5/5节', preference: '3/5节', note: '可以完成全部课时，需要更多使用普通空闲时段。', avatar: '周' },
@@ -4614,14 +4620,16 @@
           <div class="v6-schedule-plan ${frequencyTone}" data-v6-rule-field="notice"><em>系统排课方案</em><b>${schedulePlan(phase.frequency, phase.frequencyRule, phase.policy)}</b></div>
         </div>`;
       }).join('');
-      const structuredPhaseEditors = phases => phases.map((phase, phaseIndex) => `
-        <div class="v6-structured-phase" data-v6-edit-phase="${phaseIndex}">
+      const structuredPhaseEditor = (phase, sourceIndex, order, keepLastRule = false) => `
+        <div class="v6-structured-phase" data-v6-edit-phase="${sourceIndex}">
           <label><span>日期要求</span><input type="text" data-v6-edit-date value="${phase.date}"></label>
           <label><span>频次数量</span><select data-v6-edit-frequency>${selectOptions(frequencyOptions, phase.frequency)}</select></label>
           <label><span>频次规则</span><select data-v6-edit-frequency-rule${phase.frequency === '不限制' || phase.frequency === '未识别' ? ' disabled' : ''}>${frequencyRuleSelect(phase.frequencyRule || '固定')}</select></label>
           <label><span>时段要求</span><select data-v6-edit-policy>${selectOptions(['不限制', '优先', '仅限'], phase.policy)}</select></label>
           <label class="v6-editor-slots${phase.policy === '不限制' ? ' is-hidden' : ''}"><span class="v6-editor-slot-label">${slotLabel(phase.policy)}</span><input type="text" data-v6-edit-slots value="${phase.slots}"></label>
-        </div>`).join('');
+          <button type="button" class="v6-remove-phase-rule" aria-label="删除第${order + 1}条规则" title="${keepLastRule ? '至少保留一个规则' : '删除该规则'}"${keepLastRule ? ' disabled' : ''}><span class="material-symbols-outlined" aria-hidden="true">delete</span>删除</button>
+        </div>`;
+      const structuredPhaseEditors = phases => phases.map((phase, phaseIndex) => structuredPhaseEditor(phase, phaseIndex, phaseIndex, phases.length === 1)).join('');
       const teacherTagOptions = ['女老师', '男老师', '性格温柔', '课堂活跃', '全英文授课', '金牌教师', '历史老师优先'];
       const teacherSelectOptions = course => ['未指定', course.selected.name, ...course.alternatives.map(item => item.name)].map((item, index) => `<option${index === 0 ? ' selected' : ''}>${item}</option>`).join('');
       const courseTeacherRequirement = course => `
@@ -4648,7 +4656,7 @@
           ${courseTeacherRequirement(course)}
           <div class="v6-inline-editor" id="v6-course-editor-${index}">
             <div class="v6-structured-editor">${structuredPhaseEditors(course.phases)}</div>
-            <div class="v6-structured-actions"><button class="v6-cancel-structured" type="button">取消</button><button class="primary v6-save-structured" type="button">保存修改</button></div>
+            <div class="v6-structured-actions"><button class="v6-add-phase-rule" type="button"><span class="material-symbols-outlined" aria-hidden="true">add</span>添加排课要求</button><button class="v6-cancel-structured" type="button">取消</button><button class="primary v6-save-structured" type="button">保存修改</button></div>
           </div>
         </article>`).join('');
 
@@ -4879,6 +4887,17 @@
         token.querySelector('em').textContent = label;
         token.querySelector('b').textContent = value;
       };
+      const syncPhaseRemovalState = editor => {
+        const phaseEditors = Array.from(editor.querySelectorAll('[data-v6-edit-phase]'));
+        const keepLastRule = phaseEditors.length === 1;
+        phaseEditors.forEach((phaseEditor, index) => {
+          const button = phaseEditor.querySelector('.v6-remove-phase-rule');
+          button.disabled = keepLastRule;
+          button.title = keepLastRule ? '至少保留一个规则' : '删除该规则';
+          button.setAttribute('aria-label', `删除第${index + 1}条规则`);
+        });
+      };
+      let newPhaseSequence = 0;
 
       const syncRuleValidation = (phase, mode) => {
         const frequencyToken = phase.querySelector('[data-v6-rule-field="frequency"]');
@@ -4975,34 +4994,64 @@
         const cancelStructured = event.target.closest('.v6-cancel-structured');
         if (cancelStructured) {
           const card = cancelStructured.closest('.v6-course-card');
+          const courseIndex = Number(card.dataset.v6CourseIndex);
+          card.querySelector('.v6-structured-editor').innerHTML = structuredPhaseEditors(v6Courses[courseIndex].phases);
           card.querySelector('.v6-inline-editor').classList.remove('show');
           const editButton = card.querySelector('.v6-edit-course');
           editButton.textContent = '修改排课要求';
           editButton.setAttribute('aria-expanded', 'false');
         }
+        const addPhaseRule = event.target.closest('.v6-add-phase-rule');
+        if (addPhaseRule) {
+          const structuredEditor = addPhaseRule.closest('.v6-inline-editor').querySelector('.v6-structured-editor');
+          const order = structuredEditor.querySelectorAll('[data-v6-edit-phase]').length;
+          const newPhase = {
+            date: '2026.09.01—2026.12.30',
+            frequency: '1节/周',
+            frequencyRule: '固定',
+            policy: '不限制',
+            slots: '师生共同空闲时间'
+          };
+          structuredEditor.insertAdjacentHTML('beforeend', structuredPhaseEditor(newPhase, `new-${++newPhaseSequence}`, order));
+          syncPhaseRemovalState(structuredEditor);
+          const dateInput = structuredEditor.lastElementChild.querySelector('[data-v6-edit-date]');
+          dateInput.focus();
+          dateInput.select();
+          toast('已添加排课要求，请完善规则后保存');
+          return;
+        }
+        const removePhaseRule = event.target.closest('.v6-remove-phase-rule');
+        if (removePhaseRule) {
+          const structuredEditor = removePhaseRule.closest('.v6-structured-editor');
+          const phaseEditors = structuredEditor.querySelectorAll('[data-v6-edit-phase]');
+          if (phaseEditors.length <= 1) {
+            toast('每门课程至少保留一个规则');
+            return;
+          }
+          removePhaseRule.closest('[data-v6-edit-phase]').remove();
+          syncPhaseRemovalState(structuredEditor);
+          toast('规则已移除，保存后生效');
+          return;
+        }
         const saveStructured = event.target.closest('.v6-save-structured');
         if (saveStructured) {
           const card = saveStructured.closest('.v6-course-card');
           const courseIndex = Number(card.dataset.v6CourseIndex);
-          card.querySelectorAll('[data-v6-edit-phase]').forEach(editorPhase => {
-            const phaseIndex = Number(editorPhase.dataset.v6EditPhase);
-            const phase = card.querySelector(`[data-phase-index="${phaseIndex}"]`);
+          const previousPhases = v6Courses[courseIndex].phases;
+          const nextPhases = Array.from(card.querySelectorAll('[data-v6-edit-phase]')).map(editorPhase => {
+            const sourcePhase = previousPhases[Number(editorPhase.dataset.v6EditPhase)] || {};
             const date = editorPhase.querySelector('[data-v6-edit-date]').value;
             const frequency = editorPhase.querySelector('[data-v6-edit-frequency]').value;
             const frequencyRule = editorPhase.querySelector('[data-v6-edit-frequency-rule]').value;
             const policy = editorPhase.querySelector('[data-v6-edit-policy]').value;
-            const slots = editorPhase.querySelector('[data-v6-edit-slots]').value;
-            Object.assign(v6Courses[courseIndex].phases[phaseIndex], { date, frequency, frequencyRule, policy, slots, ambiguous: frequency === '未识别' });
-            phase.querySelector('.v6-phase-date').innerHTML = `<span class="material-symbols-outlined">date_range</span>${date}`;
-            const frequencyTone = frequency === '未识别' ? 'pending' : 'confirmed';
-            phase.classList.toggle('has-ambiguity', frequency === '未识别');
-            updateRuleToken(phase, 'frequency', '上课频次', frequencyLabel(frequency, frequencyRule), frequencyTone);
-            updateRuleToken(phase, 'policy', '时段要求', policy, policyTone(policy));
-            updateRuleToken(phase, 'slots', slotLabel(policy), slots, policy === '不限制' ? 'is-hidden' : policyTone(policy));
-            updateRuleToken(phase, 'notice', '系统排课方案', schedulePlan(frequency, frequencyRule, policy), frequencyTone);
+            const slots = policy === '不限制' ? '师生共同空闲时间' : editorPhase.querySelector('[data-v6-edit-slots]').value;
+            return { ...sourcePhase, date, frequency, frequencyRule, policy, slots, ambiguous: frequency === '未识别' };
           });
+          v6Courses[courseIndex].phases = nextPhases;
+          card.querySelector('.v6-phase-list').innerHTML = phaseRows(nextPhases, courseIndex);
+          card.querySelector('.v6-structured-editor').innerHTML = structuredPhaseEditors(nextPhases);
           const strategyPolicies = step4.querySelector(`[data-v6-teacher-course="${courseIndex}"] [data-v6-time-policies]`);
-          if (strategyPolicies) strategyPolicies.innerHTML = timePolicyTags(v6Courses[courseIndex].phases);
+          if (strategyPolicies) strategyPolicies.innerHTML = timePolicyTags(nextPhases);
           const strategyCourse = step4.querySelector(`[data-v6-teacher-course="${courseIndex}"]`);
           if (strategyCourse) {
             const teacherName = strategyCourse.querySelector('[data-selected-name]').textContent;
