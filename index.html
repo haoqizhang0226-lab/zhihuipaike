@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>教务智慧排课 V6 - AI需求理解与可排老师原型</title>
+  <title>教务智慧排课 · 正式版</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1072,7 +1072,7 @@
   <div class="mask" id="mask"></div>
 
   <section class="drawer-page" id="step1">
-    <div class="drawer-head"><div class="drawer-title"><span class="material-symbols-outlined drawer-product-icon" title="AI智能排课" aria-label="AI智能排课">auto_awesome</span><span class="drawer-step-tag">AI分析学生排课要求</span></div><button class="close" data-close>×</button></div>
+    <div class="drawer-head"><div class="drawer-title"><span class="material-symbols-outlined drawer-product-icon" title="AI智能排课" aria-label="AI智能排课">auto_awesome</span><span class="drawer-step-tag">补充排课要求</span></div><button class="close" data-close>×</button></div>
     <div class="drawer-body">
       <div class="step1-stack">
         <section class="section">
@@ -1339,7 +1339,7 @@
   </section>
 
   <section class="drawer-page" id="step5">
-    <div class="drawer-head"><div class="drawer-title"><span class="material-symbols-outlined drawer-product-icon" title="AI智能排课" aria-label="AI智能排课">auto_awesome</span><span class="drawer-step-tag">确认预排课表</span></div><button class="close" data-close>×</button></div>
+    <div class="drawer-head"><div class="drawer-title"><span class="material-symbols-outlined drawer-product-icon" title="AI智能排课" aria-label="AI智能排课">auto_awesome</span><span class="drawer-step-tag">确认排课方案</span></div><div class="launch-drawer-head-actions"><button type="button" class="launch-header-requirements" id="launchViewRequirements"><span class="material-symbols-outlined">visibility</span>查看排课要求</button></div></div>
     <div class="drawer-body">
       <section class="draft-version-panel">
         <div class="draft-version-head"><div class="draft-version-title"><strong id="draftVersionTitle">当前预排结果</strong><span id="draftVersionMeta">本次生成 · 未保存</span></div><button id="saveDraftVersion"><span class="material-symbols-outlined">save</span>保存为排课版本</button></div>
@@ -5209,5 +5209,11 @@
       }
     })();
   </script>
+  <link rel="stylesheet" href="scenario.css">
+  <script src="scenario.js"></script>
+  <link rel="stylesheet" href="launch.css">
+  <script src="launch.js"></script>
+  <link rel="stylesheet" href="formal-schedule.css">
+  <script src="formal-schedule.js"></script>
 </body>
 </html>
